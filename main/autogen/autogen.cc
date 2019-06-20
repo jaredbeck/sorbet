@@ -688,19 +688,19 @@ void ParsedFile::classlist(core::Context ctx, vector<string> &out) {
 }
 
 void ParsedFile::subclasses(core::Context ctx, map<string, set<string>> &out) {
+    // Ignore files in dirs we don't care about
+    if (path.find("test/") == 0 || path.find("scripts/") == 0 || path.find("lib/identification/scripts/") == 0 ||
+        path.find("ruby_benchmarks/") == 0 || path.find("/test/") != string_view::npos ||
+        path.find("/benchmark/") != string_view::npos) {
+        // Ignoring 'test/' also ignores the Sorbet CLI test input files :(
+        if (!(path.find("test/cli/autogen-subclasses") == 0)) {
+            return;
+        }
+    }
+
     auto nameToString = [&](const core::NameRef &nm) -> string { return nm.data(ctx)->show(ctx); };
 
     for (const Reference &ref : refs) {
-        // Ignore files in dirs we don't care about
-        if (path.find("test/") == 0 || path.find("scripts/") == 0 || path.find("lib/identification/scripts/") == 0 ||
-            path.find("ruby_benchmarks/") == 0 || path.find("/test/") != string_view::npos ||
-            path.find("/benchmark/") != string_view::npos) {
-            // Ignoring 'test/' also ignores the Sorbet CLI test input files :(
-            if (!(path.find("test/cli/autogen-subclasses") == 0)) {
-                continue;
-            }
-        }
-
         DefinitionRef defn = ref.parent_of;
 
         if (!defn.exists()) {
